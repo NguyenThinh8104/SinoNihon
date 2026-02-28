@@ -73,7 +73,7 @@
         <h2>SinoNihon</h2>
 
         <a href="<%=request.getContextPath()%>/dashboard">🏠 Dashboard</a>
-
+        <a href="<%=request.getContextPath()%>/entrance-test" target="mainFrame">📝 Entrance Test</a>
         <!-- 🔥 THÊM LINK COURSES -->
         <a href="<%=request.getContextPath()%>/courses" target="mainFrame">📚 My Courses</a>
 

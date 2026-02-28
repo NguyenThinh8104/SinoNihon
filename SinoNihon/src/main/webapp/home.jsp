@@ -125,6 +125,12 @@
         <p>Master Hiragana, Katakana & Kanji step by step.</p>
         <a href="jsp/register.jsp">Start Learning</a>
     </div>
+
+    <div class="course-box">
+        <h2>🚀Entrance Test</h2>
+        <p>Take the entrance test now!</p>
+        <a href="jsp/register.jsp">Take Test</a>
+    </div>
 </section>
 
 <footer>

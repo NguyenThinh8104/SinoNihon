@@ -8,7 +8,7 @@ public class DBContext {
     private static final String URL =
             "jdbc:sqlserver://localhost:1433;databaseName=SinoNihon3;encrypt=false";
 
-    private static final String USER = "thanh";
+    private static final String USER = "sa";
     private static final String PASSWORD = "123";
 
     public static Connection getConnection() throws Exception {

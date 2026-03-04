@@ -137,5 +137,107 @@
     © 2026 SinoNihon. All rights reserved.
 </footer>
 
+<style>
+    .ai-widget {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 1000;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .ai-btn {
+        width: 60px;
+        height: 60px;
+        background-color: #3498db;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 30px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: transform 0.3s;
+    }
+    .ai-btn:hover {
+        transform: scale(1.1);
+    }
+    .ai-popup {
+        display: none;
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 300px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        overflow: hidden;
+        animation: slideUp 0.3s ease;
+    }
+    .ai-popup-header {
+        background: #1f2a40;
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .ai-popup-close {
+        cursor: pointer;
+        font-size: 18px;
+    }
+    .ai-popup-body {
+        padding: 20px;
+        text-align: center;
+        color: #555;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+    .ai-popup-body a {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 20px;
+        background: #27ae60;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="ai-widget">
+    <div class="ai-popup" id="aiPopup">
+        <div class="ai-popup-header">
+            <span>🤖 SinoNihon AI</span>
+            <span class="ai-popup-close" onclick="toggleAIPopup()">✖</span>
+        </div>
+        <div class="ai-popup-body">
+            Bạn cần tư vấn lộ trình học hay sửa lỗi ngữ pháp? Trợ lý AI của chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7!
+            <br>
+            <a href="<%= request.getContextPath() %>/ai-assistant?feature=LEARNING_PATH">Trải nghiệm ngay</a>
+        </div>
+    </div>
+    <div class="ai-btn" onclick="toggleAIPopup()">🤖</div>
+</div>
+
+<script>
+    function toggleAIPopup() {
+        const popup = document.getElementById('aiPopup');
+        popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // Tự động mở popup sau 3 giây để thu hút sự chú ý
+    setTimeout(() => {
+        const popup = document.getElementById('aiPopup');
+        if(popup.style.display !== 'block') {
+            popup.style.display = 'block';
+        }
+    }, 3000);
+</script>
 </body>
 </html>

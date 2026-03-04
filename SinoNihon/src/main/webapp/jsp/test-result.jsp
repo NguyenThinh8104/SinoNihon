@@ -16,7 +16,7 @@
   <h2>🎉 Hoàn Thành Bài Kiểm Tra</h2>
   <p>Điểm số của bạn là:</p>
   <div class="score"><%= request.getAttribute("score") %> / <%= request.getAttribute("total") %></div>
-
+  <p>Chúc mừng bạn đã hoàn thành bài thi!</p>
   <a href="${pageContext.request.contextPath}/dashboard" class="back-btn" target="_parent">Quay lại Dashboard</a>
 </div>
 </body>

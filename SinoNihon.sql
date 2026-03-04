@@ -75,6 +75,36 @@ CREATE TABLE UserLessonProgress (
     PRIMARY KEY (UserID, LessonID)
 );
 
+create table ChatHistory (
+ChatID int identity (1,1) primary key,
+UserID int not null,
+Feature nvarchar(50) not null,
+SenderType nvarchar (20) not null,
+Message nvarchar (max) not null,
+CreatedAt Datetime default getdate(),
+foreign key (UserID) references users(User_id) on delete cascade
+);
+
+CREATE TABLE EntranceTest (
+    TestID INT IDENTITY PRIMARY KEY,
+    Title NVARCHAR(200) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+
+CREATE TABLE Questions (
+    QuestionID INT IDENTITY PRIMARY KEY,
+    TestID INT NOT NULL,
+    QuestionText NVARCHAR(MAX) NOT NULL,
+    OptionA NVARCHAR(200),
+    OptionB NVARCHAR(200),
+    OptionC NVARCHAR(200),
+    OptionD NVARCHAR(200),
+    CorrectOption NVARCHAR(10) NOT NULL,
+    FOREIGN KEY (TestID) REFERENCES EntranceTest(TestID) ON DELETE CASCADE
+);
+
+
 -- ===== COURSES =====
 INSERT INTO Courses (Title, Language, Description)
 VALUES 

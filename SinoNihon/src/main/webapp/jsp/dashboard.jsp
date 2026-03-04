@@ -73,12 +73,11 @@
         <h2>SinoNihon</h2>
 
         <a href="<%=request.getContextPath()%>/dashboard">🏠 Dashboard</a>
-        <a href="<%=request.getContextPath()%>/entrance-test" target="mainFrame">📝 Entrance Test</a>
-        <!-- 🔥 THÊM LINK COURSES -->
         <a href="<%=request.getContextPath()%>/courses" target="mainFrame">📚 My Courses</a>
-
-        <!-- 🔥 THÊM LINK PROGRESS -->
         <a href="<%=request.getContextPath()%>/progress" target="mainFrame">📊 My Progress</a>
+
+        <a href="<%=request.getContextPath()%>/ai-assistant?feature=LEARNING_PATH" target="mainFrame">🤖 AI Tư vấn lộ trình</a>
+        <a href="<%=request.getContextPath()%>/ai-assistant?feature=GRAMMAR" target="mainFrame">✍️ AI Sửa ngữ pháp</a>
 
         <a href="<%=request.getContextPath()%>/profile" target="mainFrame">⚙ Update Profile</a>
         <a href="<%=request.getContextPath()%>/logout">🚪 Logout</a>

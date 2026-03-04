@@ -55,6 +55,13 @@ public class AuthController extends HttpServlet {
 
                 if (u != null) {
                     request.getSession().setAttribute("user", u);
+
+                    try {
+                        dao.ChatDAO chatDAO = new dao.ChatDAO();
+                        chatDAO.clearHistory(u.getUserId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     response.sendRedirect(request.getContextPath() + "/dashboard");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/jsp/login.jsp?error=true");

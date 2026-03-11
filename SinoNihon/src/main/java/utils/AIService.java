@@ -11,8 +11,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 public class AIService {
-    private static final String API_KEY = "AIzaSyAMFpE783Sxaa9dy1NS0imj441QWuym_Bk";
-    private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + API_KEY;
+    private static final String API_KEY = "";
+    private static final String API_URL = "" + API_KEY;
 
     public static String getAIResponse (String systemPrompt, String userMessage){
         try {

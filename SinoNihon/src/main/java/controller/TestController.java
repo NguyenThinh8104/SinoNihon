@@ -4,15 +4,15 @@ import dao.TestDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.Part;
+import jakarta.servlet.http.*;
+import model.EntranceTest;
 import model.Question;
+import model.User;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,31 +23,61 @@ import java.util.List;
         maxRequestSize = 1024 * 1024 * 50     // 50MB
 )
 public class TestController extends HttpServlet {
+
     private final TestDAO testDAO = new TestDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (session != null) ? (User) session.getAttribute("user") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
+            return;
+        }
+
         String action = request.getParameter("action");
-        if ("take".equals(action)) {
-            try {
+
+        try {
+            if ("take".equals(action)) {
+                // HỌC VIÊN LÀM BÀI
                 int testID = Integer.parseInt(request.getParameter("testID"));
                 List<Question> questions = testDAO.getQuestionsByTest(testID);
+
+                if (questions == null || questions.isEmpty()) {
+                    throw new Exception("Bài kiểm tra không tồn tại hoặc chưa có câu hỏi.");
+                }
+
                 request.setAttribute("questions", questions);
                 request.setAttribute("testID", testID);
-                // GỌI FILE JSP ĐỂ LÀM BÀI
                 request.getRequestDispatcher("/jsp/take-test.jsp").forward(request, response);
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.sendRedirect(request.getContextPath() + "/dashboard");
+
+            } else if ("upload".equals(action)) {
+                // UPLOAD BÀI (Chỉ Admin/Mentor mới được vào)
+                if (!"Admin".equalsIgnoreCase(user.getRole()) && !"Mentor".equalsIgnoreCase(user.getRole())) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied. Chỉ Admin/Mentor mới có quyền upload.");
+                    return;
+                }
+                request.getRequestDispatcher("/jsp/upload-test.jsp").forward(request, response);
+
+            } else {
+                // MẶC ĐỊNH LÀ ACTION="list" HOẶC RỖNG -> HIỂN THỊ DANH SÁCH BÀI TEST
+                List<EntranceTest> tests = testDAO.getAllTests();
+                request.setAttribute("testList", tests);
+                request.getRequestDispatcher("/jsp/test-list.jsp").forward(request, response);
             }
-        } else {
-            request.getRequestDispatcher("/jsp/upload-test.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setContentType("text/html;charset=UTF-8");
+            response.getWriter().print("<h2 style='color:red;'>⚠ Lỗi Hệ Thống: " + e.getMessage() + "</h2>");
+            response.getWriter().print("<p>Sếp hãy check lại Terminal/Console của IntelliJ để xem chi tiết nhé!</p>");
         }
     }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8"); // Đảm bảo tiếng Việt không bị lỗi font
         String action = request.getParameter("action");
+
         if ("upload".equals(action)) {
             handleUpload(request, response);
         } else if ("submit".equals(action)) {
@@ -56,10 +86,19 @@ public class TestController extends HttpServlet {
     }
 
     private void handleUpload(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute("user");
+
+        // Bảo mật 2 lớp: Chặn post request trái phép từ Postman/Curl
+        if (user == null || (!"Admin".equalsIgnoreCase(user.getRole()) && !"Mentor".equalsIgnoreCase(user.getRole()))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied.");
+            return;
+        }
+
         try {
             Part filePart = request.getPart("file");
-            if (filePart == null || filePart.getSize() == 0) {
-                request.setAttribute("error", "File trống hoặc chưa được chọn.");
+            if (filePart == null || filePart.getSize() == 0 || !filePart.getSubmittedFileName().endsWith(".docx")) {
+                request.setAttribute("error", "Vui lòng chọn file định dạng .docx hợp lệ.");
                 request.getRequestDispatcher("/jsp/upload-test.jsp").forward(request, response);
                 return;
             }
@@ -67,39 +106,38 @@ public class TestController extends HttpServlet {
             List<Question> questions = new ArrayList<>();
             Question currentQues = null;
 
-            // Dùng XWPFWordExtractor để giải quyết triệt để lỗi định dạng ngắt dòng
-            try (XWPFDocument document = new XWPFDocument(filePart.getInputStream());
+            try (InputStream is = filePart.getInputStream();
+                 XWPFDocument document = new XWPFDocument(is);
                  XWPFWordExtractor extractor = new XWPFWordExtractor(document)) {
 
                 String fullText = extractor.getText();
-                String[] lines = fullText.split("\\r?\\n"); // Cắt từng dòng để phân tích
+                String[] lines = fullText.split("\\r?\\n");
 
                 for (String line : lines) {
                     String text = line.trim();
                     if (text.isEmpty()) continue;
 
-                    // Xử lý câu hỏi: Q1:, Q2:, 10:
+                    // Bắt đầu một câu hỏi mới
                     if (text.matches("^(Q?\\d+|Câu \\d+)\\s*[:\\.].*")) {
                         currentQues = new Question();
                         currentQues.setQuestionText(text.replaceFirst("^(Q?\\d+|Câu \\d+)\\s*[:\\.]\\s*", "").trim());
                     }
                     else if (currentQues != null) {
-                        // Xử lý dòng Answer: A
+                        // Nhận diện đáp án đúng
                         if (text.matches("^(Answer|Đáp án)\\s*[:\\.].*")) {
-                            currentQues.setCorrectOption(text.replaceAll("^(Answer|Đáp án)\\s*[:\\.]\\s*", "").trim());
+                            currentQues.setCorrectOption(text.replaceAll("^(Answer|Đáp án)\\s*[:\\.]\\s*", "").trim().toUpperCase());
                             questions.add(currentQues);
-                            currentQues = null; // Hoàn tất 1 câu, reset cho câu sau
+                            currentQues = null;
                         }
                         else {
-                            // THUẬT TOÁN XỬ LÝ 4 ĐÁP ÁN TRÊN CÙNG 1 DÒNG (Đúng như ảnh em chụp)
-                            int idxA = text.indexOf("A."); if (idxA == -1) idxA = text.indexOf("A:");
-                            int idxB = text.indexOf("B."); if (idxB == -1) idxB = text.indexOf("B:");
-                            int idxC = text.indexOf("C."); if (idxC == -1) idxC = text.indexOf("C:");
-                            int idxD = text.indexOf("D."); if (idxD == -1) idxD = text.indexOf("D:");
+                            // THUẬT TOÁN PHÂN TÍCH ĐÁP ÁN AN TOÀN HƠN (Safe Bounds Checking)
+                            int idxA = Math.max(text.indexOf("A."), text.indexOf("A:"));
+                            int idxB = Math.max(text.indexOf("B."), text.indexOf("B:"));
+                            int idxC = Math.max(text.indexOf("C."), text.indexOf("C:"));
+                            int idxD = Math.max(text.indexOf("D."), text.indexOf("D:"));
 
-                            if (idxA != -1 && idxB != -1) {
-                                // Cắt lấy chuỗi giữa A và B, B và C, C và D
-                                if (idxC != -1 && idxD != -1) {
+                            if (idxA != -1 && idxB != -1 && idxA < idxB) { // Phải đảm bảo A nằm trước B
+                                if (idxC != -1 && idxD != -1 && idxB < idxC && idxC < idxD) {
                                     currentQues.setOptionA(text.substring(idxA + 2, idxB).trim());
                                     currentQues.setOptionB(text.substring(idxB + 2, idxC).trim());
                                     currentQues.setOptionC(text.substring(idxC + 2, idxD).trim());
@@ -109,7 +147,7 @@ public class TestController extends HttpServlet {
                                     currentQues.setOptionB(text.substring(idxB + 2).trim());
                                 }
                             } else {
-                                // Fallback cho trường hợp mỗi đáp án 1 dòng
+                                // Fallback: Đáp án nằm trên từng dòng
                                 if (text.startsWith("A.") || text.startsWith("A:")) currentQues.setOptionA(text.substring(2).trim());
                                 else if (text.startsWith("B.") || text.startsWith("B:")) currentQues.setOptionB(text.substring(2).trim());
                                 else if (text.startsWith("C.") || text.startsWith("C:")) currentQues.setOptionC(text.substring(2).trim());
@@ -120,28 +158,40 @@ public class TestController extends HttpServlet {
                 }
             }
 
-            // Nếu thuật toán phân tích không ra câu nào, báo lỗi rành mạch
             if (questions.isEmpty()) {
-                request.setAttribute("error", "Lỗi: File Word chưa đúng chuẩn. Hãy chắc chắn có Q1:, A. B. C. D. và Answer: !");
+                request.setAttribute("error", "Định dạng file sai. Hãy đảm bảo cú pháp: Câu 1: ... A. ... B. ... Answer: A");
                 request.getRequestDispatcher("/jsp/upload-test.jsp").forward(request, response);
                 return;
             }
 
-            // Lưu vào CSDL
-            int testID = testDAO.createTest("Entrance Test - " + System.currentTimeMillis());
-            testDAO.insertQuestions(testID, questions);
+            // Gọi Transaction DAO an toàn
+            EntranceTest test = new EntranceTest();
+            test.setTitle("Entrance Test - " + System.currentTimeMillis());
+            test.setCreatedBy(user.getUserId());
+            test.setSource("Word");
 
-            // Chuyển hướng sang trang làm bài!
-            response.sendRedirect(request.getContextPath() + "/entrance-test?action=take&testID=" + testID);
+            int testID = testDAO.createTestWithQuestions(test, questions);
+
+            // Chuyển hướng sang trang làm bài
+            request.getSession().setAttribute("success", "Tải đề thi thành công! Bài test đã sẵn sàng cho học viên.");
+            response.sendRedirect(request.getContextPath() + "/entrance-test?action=list");
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Lỗi Server: Không thể đọc file.");
+            request.setAttribute("error", "Lỗi Server: " + e.getMessage());
             request.getRequestDispatcher("/jsp/upload-test.jsp").forward(request, response);
         }
     }
 
     private void handleSubmit(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
+            return;
+        }
+
         try {
             int testID = Integer.parseInt(request.getParameter("testID"));
             List<Question> questions = testDAO.getQuestionsByTest(testID);
@@ -154,10 +204,13 @@ public class TestController extends HttpServlet {
                 }
             }
 
+            // Tích hợp: Tương lai bạn cần viết hàm lưu điểm vào Database ở đây
+            // testDAO.saveTestResult(testID, user.getUserId(), score, questions.size());
+
             request.setAttribute("score", score);
             request.setAttribute("total", questions.size());
-            // CHUYỂN SANG TRANG KẾT QUẢ
             request.getRequestDispatcher("/jsp/test-result.jsp").forward(request, response);
+
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/dashboard");

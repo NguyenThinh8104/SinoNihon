@@ -75,7 +75,15 @@
         <a href="<%=request.getContextPath()%>/dashboard">🏠 Dashboard</a>
         <a href="<%=request.getContextPath()%>/courses" target="mainFrame">📚 My Courses</a>
         <a href="<%=request.getContextPath()%>/progress" target="mainFrame">📊 My Progress</a>
-        <a href="<%=request.getContextPath()%>/entrance-test" target="mainFrame">📃 Make Test</a>
+        <%
+            if (user != null && ("Admin".equalsIgnoreCase(user.getRole()) || "Mentor".equalsIgnoreCase(user.getRole()))) {
+        %>
+        <a href="<%=request.getContextPath()%>/entrance-test?action=upload" target="mainFrame">📃 Make Test (Admin)</a>
+        <%
+            }
+        %>
+
+        <a href="<%=request.getContextPath()%>/entrance-test?action=list" target="mainFrame">📝 Entrance Tests</a>
         <a href="<%=request.getContextPath()%>/ai-assistant?feature=AI_assistant" target="mainFrame">🤖 SinoNihon AI</a>
         <a href="<%=request.getContextPath()%>/profile" target="mainFrame">⚙ Update Profile</a>
         <a href="<%=request.getContextPath()%>/logout">🚪 Logout</a>

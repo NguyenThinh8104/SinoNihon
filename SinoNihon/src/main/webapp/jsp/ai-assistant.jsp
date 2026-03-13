@@ -124,7 +124,7 @@
 <body>
 
 <div class="chat-container">
-    <div class="chat-header">🤖 SinoNihon AI - <%= title %></div>
+    <div class="chat-header">🤖 SinoNihon AI</div>
 
     <div class="chat-box" id="chatBox">
         <% if(history != null && !history.isEmpty()) {

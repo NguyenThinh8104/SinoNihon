@@ -117,19 +117,19 @@
     <div class="course-box">
         <h2>🇨🇳 Chinese</h2>
         <p>Learn Mandarin from basic to advanced with clear lessons.</p>
-        <a href="jsp/register.jsp">Start Learning</a>
+        <a href="jsp/login.jsp">Start Learning</a>
     </div>
 
     <div class="course-box">
         <h2>🇯🇵 Japanese</h2>
         <p>Master Hiragana, Katakana & Kanji step by step.</p>
-        <a href="jsp/register.jsp">Start Learning</a>
+        <a href="jsp/login.jsp">Start Learning</a>
     </div>
 
     <div class="course-box">
         <h2>🚀Entrance Test</h2>
         <p>Take the entrance test now!</p>
-        <a href="jsp/register.jsp">Take Test</a>
+        <a href="jsp/login.jsp">Take Test</a>
     </div>
 </section>
 

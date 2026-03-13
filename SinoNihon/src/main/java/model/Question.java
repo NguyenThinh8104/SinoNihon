@@ -1,49 +1,31 @@
 package model;
 
 public class Question {
-    private int QuestionID;
-    private int TestId;
+    private int questionID;
+    private int testID;
     private String questionText;
-    private String optionA, optionB, optionC, optionD;
+    private String optionA;
+    private String optionB;
+    private String optionC;
+    private String optionD;
+    private String correctOption;
 
-    public String getCorrectOption() {
-        return correctOption;
+    public Question() {}
+
+    public int getQuestionID() {
+        return questionID;
     }
 
-    public void setCorrectOption(String correctOption) {
-        this.correctOption = correctOption;
+    public void setQuestionID(int questionID) {
+        this.questionID = questionID;
     }
 
-    public String getOptionD() {
-        return optionD;
+    public int getTestID() {
+        return testID;
     }
 
-    public void setOptionD(String optionD) {
-        this.optionD = optionD;
-    }
-
-    public String getOptionC() {
-        return optionC;
-    }
-
-    public void setOptionC(String optionC) {
-        this.optionC = optionC;
-    }
-
-    public String getOptionB() {
-        return optionB;
-    }
-
-    public void setOptionB(String optionB) {
-        this.optionB = optionB;
-    }
-
-    public String getOptionA() {
-        return optionA;
-    }
-
-    public void setOptionA(String optionA) {
-        this.optionA = optionA;
+    public void setTestID(int testID) {
+        this.testID = testID;
     }
 
     public String getQuestionText() {
@@ -54,23 +36,43 @@ public class Question {
         this.questionText = questionText;
     }
 
-    public int getTestId() {
-        return TestId;
+    public String getOptionA() {
+        return optionA;
     }
 
-    public void setTestId(int testId) {
-        TestId = testId;
+    public void setOptionA(String optionA) {
+        this.optionA = optionA;
     }
 
-    public int getQuestionID() {
-        return QuestionID;
+    public String getOptionB() {
+        return optionB;
     }
 
-    public void setQuestionID(int questionID) {
-        QuestionID = questionID;
+    public void setOptionB(String optionB) {
+        this.optionB = optionB;
     }
 
-    private String correctOption;
+    public String getOptionC() {
+        return optionC;
+    }
 
+    public void setOptionC(String optionC) {
+        this.optionC = optionC;
+    }
 
+    public String getOptionD() {
+        return optionD;
+    }
+
+    public void setOptionD(String optionD) {
+        this.optionD = optionD;
+    }
+
+    public String getCorrectOption() {
+        return correctOption;
+    }
+
+    public void setCorrectOption(String correctOption) {
+        this.correctOption = correctOption;
+    }
 }
